@@ -10,6 +10,8 @@ from sklearn.metrics import (
     roc_auc_score
 )
 import logging
+import yaml
+from dvclive import Live
 
 log_dir = 'logs'
 os.makedirs(log_dir,exist_ok=True)
@@ -32,6 +34,19 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+def load_params(params_path:str)->dict:
+    try:
+        with open(params_path, 'r') as file:
+            params = yaml.safe_load(file)
+        logger.debug(f'Parameters retrieved from : {params_path}')
+        return params
+    except FileNotFoundError as e:
+        logger.error(f'File Not found: {e}')
+        raise
+    except Exception as e:
+        logger.error(f'Error occurred file loading parameter from yaml: {e}')
+        raise
 
 def load_model(file_path:str):
     try:
@@ -95,6 +110,7 @@ def save_metrics(metrics:dict, file_path:str)->None:
 
 def main():
     try:
+        params = load_params('params.yaml')
         clf = load_model('./models/model.pkl')
         test_data = load_data('./data/processed/test_tfidf.csv')
 
@@ -102,6 +118,14 @@ def main():
         y_test = test_data.iloc[:,-1].values
 
         metrics = evaluate_model(clf,X_test,y_test)
+
+        with Live(save_dvc_exp=True) as live:
+            live.log_metric('accuracy',metrics['accuracy'])
+            live.log_metric('precision',metrics['precision'])
+            live.log_metric('recall',metrics['recall'])
+            live.log_metric('AUC',metrics['auc'])
+
+            live.log_params(params)
 
         save_metrics(metrics,'reports/metrics.json')
 

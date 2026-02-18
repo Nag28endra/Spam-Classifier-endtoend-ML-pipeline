@@ -13,3 +13,4 @@ dvc-objects==5.2.0
 dvc-render==1.0.2
 dvc-studio-client==0.22.0
 dvc-task==0.40.2
+dvclive==3.49.0
