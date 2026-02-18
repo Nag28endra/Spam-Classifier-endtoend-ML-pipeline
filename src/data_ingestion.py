@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
 import logging
+import yaml
 
 # Create 'logs' directory
 log_dir = 'logs'
@@ -25,6 +26,19 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+def load_params(params_path:str)->dict:
+    try:
+        with open(params_path, 'r') as file:
+            params = yaml.safe_load(file)
+        logger.debug(f'Parameters retrieved from : {params_path}')
+        return params
+    except FileNotFoundError as e:
+        logger.error(f'File Not found: {e}')
+        raise
+    except Exception as e:
+        logger.error(f'Error occurred file loading parameter from yaml: {e}')
+        raise
 
 def load_data(data_url:str) -> pd.DataFrame:
     try:
@@ -65,11 +79,12 @@ def save_data(train_data: pd.DataFrame, test_data: pd.DataFrame, data_path:str) 
 
 def main():
     try:
-        test_size =0.2
+        params = load_params('params.yaml')
+        test_size =params['data_ingestion']['test_size']
         url = "https://raw.githubusercontent.com/Nag28endra/datasets/refs/heads/main/spam.csv"
         df = load_data(url)
         final_df = preprocess_data(df)
-        train_data,test_data = train_test_split(final_df,test_size=0.2,random_state=2)
+        train_data,test_data = train_test_split(final_df,test_size=test_size,random_state=2)
         save_data(train_data,test_data,data_path='./data')
     except Exception as e:
         logger.error(f'Failed to complete the data ingestion process: {e}')
