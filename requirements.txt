@@ -6,3 +6,10 @@ matplotlib==3.10.8
 matplotlib-inline==0.2.1
 wordcloud==1.9.6
 xgboost==3.2.0
+dvc==3.66.1
+dvc-data==3.18.2
+dvc-http==2.32.0
+dvc-objects==5.2.0
+dvc-render==1.0.2
+dvc-studio-client==0.22.0
+dvc-task==0.40.2
